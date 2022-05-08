@@ -8,6 +8,9 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// DB_USER=mi-store
+// DB_PASS=mi-store
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@emajohn-cluster.w8wse.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -34,7 +37,7 @@ async function runMi() {
             const newProduct = req.body;
             const result = await productCollection.insertOne(newProduct);
             res.send(result);
-        })
+        });
 
         //delete product
         app.delete('/product/:id', async (req, res) => {
@@ -42,7 +45,8 @@ async function runMi() {
             const query = { _id: ObjectId(id) };
             const result = await productCollection.deleteOne(query);
             res.send(result);
-        })
+        });
+
 
         //delivery a product
         app.put('/product/:id', async (req, res) => {
@@ -57,7 +61,23 @@ async function runMi() {
             };
             const result = await productCollection.updateOne(filter, updateDoc, options);
             res.send(result);
-        })
+        });
+
+
+        //update quantity 
+        app.put('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateQuantity = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    quantity: updateQuantity.newQuantity
+                }
+            };
+            const result = await productCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        });
 
     }
     finally {
